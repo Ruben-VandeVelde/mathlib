@@ -701,8 +701,8 @@ instance normed_field.to_normed_space : normed_space α α :=
 instance normed_space.to_normed_module [normed_space α β] : normed_module α β :=
 { norm_smul_le := λ s x, le_of_eq (normed_space.norm_smul s x)}
 
-/-- Over a normed field, `∥c • x∥ = ∥c∥ ∥x∥` automatically implies `∥c • x∥ = ∥c∥ ∥x∥`. -/
-instance normed_space.of_normed_module [normed_module α β] : normed_space α β :=
+/-- Over a normed field, `∥c • x∥ ≤ ∥c∥ ∥x∥` automatically implies `∥c • x∥ = ∥c∥ ∥x∥`. -/
+def normed_space.of_normed_module [normed_module α β] : normed_space α β :=
 { norm_smul := begin
   { intros s x,
     by_cases h : s = 0,
@@ -720,16 +720,16 @@ instance normed_space.of_normed_module [normed_module α β] : normed_space α �
       ... = ∥s • x∥ : by rw [mul_div_cancel' 1 h, normed_field.norm_one, one_mul] } } }
 end }
 
-@[simp] lemma norm_smul [normed_space α β] (s : α) (x : β) : ∥s • x∥ = ∥s∥ * ∥x∥ :=
+lemma norm_smul [normed_space α β] (s : α) (x : β) : ∥s • x∥ = ∥s∥ * ∥x∥ :=
 normed_space.norm_smul s x
 
-@[simp] lemma dist_smul [normed_space α β] (s : α) (x y : β) : dist (s • x) (s • y) = ∥s∥ * dist x y :=
+lemma dist_smul [normed_space α β] (s : α) (x y : β) : dist (s • x) (s • y) = ∥s∥ * dist x y :=
 by simp only [dist_eq_norm, (norm_smul _ _).symm, smul_sub]
 
-@[simp] lemma nnnorm_smul [normed_space α β] (s : α) (x : β) : nnnorm (s • x) = nnnorm s * nnnorm x :=
+lemma nnnorm_smul [normed_space α β] (s : α) (x : β) : nnnorm (s • x) = nnnorm s * nnnorm x :=
 nnreal.eq $ norm_smul s x
 
-@[simp] lemma nndist_smul [normed_space α β] (s : α) (x y : β) :
+lemma nndist_smul [normed_space α β] (s : α) (x y : β) :
   nndist (s • x) (s • y) = nnnorm s * nndist x y :=
 nnreal.eq $ dist_smul s x y
 

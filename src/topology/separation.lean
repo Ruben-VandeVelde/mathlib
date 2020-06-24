@@ -123,18 +123,21 @@ t2_iff_nhds.trans
      h f uf (le_trans hf inf_le_left) (le_trans hf inf_le_right)⟩
 
 lemma is_closed_diagonal [t2_space α] : is_closed (diagonal α) :=
-is_closed_iff_nhds.mpr $ assume ⟨a₁, a₂⟩ h, eq_of_nhds_ne_bot $ assume : 𝓝 a₁ ⊓ 𝓝 a₂ = ⊥, h $
-  let ⟨t₁, ht₁, t₂, ht₂, (h' : t₁ ∩ t₂ ⊆ ∅)⟩ :=
-    by rw [←empty_in_sets_eq_bot, mem_inf_sets] at this; exact this in
-  begin
-    change t₁ ∈ 𝓝 a₁ at ht₁,
-    change t₂ ∈ 𝓝 a₂ at ht₂,
-    rw [nhds_prod_eq, ←empty_in_sets_eq_bot],
-    apply filter.sets_of_superset,
-    apply inter_mem_inf_sets (prod_mem_prod ht₁ ht₂) (mem_principal_sets.mpr (subset.refl _)),
-    exact assume ⟨x₁, x₂⟩ ⟨⟨hx₁, hx₂⟩, (heq : x₁ = x₂)⟩,
-      show false, from @h' x₁ ⟨hx₁, heq.symm ▸ hx₂⟩
-  end
+begin
+  apply is_closed_iff_nhds.mpr,
+  rintros ⟨a₁, a₂⟩ h,
+  apply eq_of_nhds_ne_bot,
+  intro this,
+  rw [←empty_in_sets_eq_bot, mem_inf_sets] at this,
+  rcases this with ⟨t₁, ht₁, t₂, ht₂, h'⟩,
+
+  apply h,
+  rw [nhds_prod_eq, ←empty_in_sets_eq_bot],
+  apply filter.sets_of_superset,
+  apply inter_mem_inf_sets (prod_mem_prod ht₁ ht₂) (mem_principal_sets.mpr (subset.refl _)),
+  rintros ⟨x₁, x₂⟩ ⟨⟨hx₁, hx₂⟩, heq⟩,
+  exact h' ⟨hx₁, heq.symm ▸ hx₂⟩,
+end
 
 lemma t2_iff_is_closed_diagonal : t2_space α ↔ is_closed (diagonal α) :=
 begin

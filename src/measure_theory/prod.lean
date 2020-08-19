@@ -195,7 +195,7 @@ begin
   exact measurable_measure_prod_mk_right hs
 end
 
-/-- The Lebesgue intergral is measurable. This shows that the integrand of (the right-hand-side of)
+/-- The Lebesgue integral is measurable. This shows that the integrand of (the right-hand-side of)
   Tonelli's theorem is measurable. -/
 lemma measurable.lintegral_prod_right' [sigma_finite ν] :
   ∀ {f : α × β → ennreal} (hf : measurable f), measurable (λ x, ∫⁻ y, f (x, y) ∂ν) :=
@@ -214,20 +214,20 @@ begin
     simpa [lintegral_supr (λ n, (hf n).comp m), this] }
 end
 
-/-- The Lebesgue intergral is measurable. This shows that the integrand of (the right-hand-side of)
+/-- The Lebesgue integral is measurable. This shows that the integrand of (the right-hand-side of)
   Tonelli's theorem is measurable.
   This version has the argument `f` in curried form. -/
 lemma measurable.lintegral_prod_right [sigma_finite ν] {f : α → β → ennreal}
   (hf : measurable (uncurry f)) : measurable (λ x, ∫⁻ y, f x y ∂ν) :=
 hf.lintegral_prod_right'
 
-/-- The Lebesgue intergral is measurable. This shows that the integrand of (the right-hand-side of)
+/-- The Lebesgue integral is measurable. This shows that the integrand of (the right-hand-side of)
   the symmetric version of Tonelli's theorem is measurable. -/
 lemma measurable.lintegral_prod_left' [sigma_finite μ] {f : α × β → ennreal}
   (hf : measurable f) : measurable (λ y, ∫⁻ x, f (x, y) ∂μ) :=
 (measurable_swap_iff.mpr hf).lintegral_prod_right'
 
-/-- The Lebesgue intergral is measurable. This shows that the integrand of (the right-hand-side of)
+/-- The Lebesgue integral is measurable. This shows that the integrand of (the right-hand-side of)
   the symmetric version of Tonelli's theorem is measurable.
   This version has the argument `f` in curried form. -/
 lemma measurable.lintegral_prod_left [sigma_finite μ] {f : α → β → ennreal}
@@ -245,7 +245,7 @@ section
 variables [second_countable_topology E] [normed_space ℝ E]
   [complete_space E] [borel_space E]
 
-/-- The Bochner intergral is measurable. This shows that the integrand of (the right-hand-side of)
+/-- The Bochner integral is measurable. This shows that the integrand of (the right-hand-side of)
   Fubini's theorem is measurable.
   This version has `f` in curried form. -/
 lemma measurable.integral_prod_right [sigma_finite ν] ⦃f : α → β → E⦄
@@ -285,20 +285,20 @@ begin
   exact measurable_of_tendsto_metric hf' h2f'
 end
 
-/-- The Bochner intergral is measurable. This shows that the integrand of (the right-hand-side of)
+/-- The Bochner integral is measurable. This shows that the integrand of (the right-hand-side of)
   Fubini's theorem is measurable. -/
 lemma measurable.integral_prod_right' [sigma_finite ν] ⦃f : α × β → E⦄
   (hf : measurable f) : measurable (λ x, ∫ y, f (x, y) ∂ν) :=
 by { rw [← uncurry_curry f] at hf, exact hf.integral_prod_right }
 
-/-- The Bochner intergral is measurable. This shows that the integrand of (the right-hand-side of)
+/-- The Bochner integral is measurable. This shows that the integrand of (the right-hand-side of)
   the symmetric version of Fubini's theorem is measurable.
   This version has `f` in curried form. -/
 lemma measurable.integral_prod_left [sigma_finite μ] ⦃f : α → β → E⦄
   (hf : measurable (uncurry f)) : measurable (λ y, ∫ x, f x y ∂μ) :=
 (hf.comp measurable_swap).integral_prod_right'
 
-/-- The Bochner intergral is measurable. This shows that the integrand of (the right-hand-side of)
+/-- The Bochner integral is measurable. This shows that the integrand of (the right-hand-side of)
   the symmetric version of Fubini's theorem is measurable. -/
 lemma measurable.integral_prod_left' [sigma_finite μ] ⦃f : α × β → E⦄
   (hf : measurable f) : measurable (λ y, ∫ x, f (x, y) ∂μ) :=

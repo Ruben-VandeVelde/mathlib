@@ -571,7 +571,7 @@ theorem subset_iff_inter_eq_self {s t : set α} : s ⊆ t ↔ s ∩ t = s :=
 lemma inter_compl_nonempty_iff {s t : set α} : (s ∩ tᶜ).nonempty ↔ ¬ s ⊆ t :=
 begin
   split,
-  { rintros ⟨x ,xs, xt⟩ sub,
+  { rintros ⟨x, xs, xt⟩ sub,
     exact xt (sub xs) },
   { intros h,
     rcases not_subset.mp h with ⟨x, xs, xt⟩,

@@ -19,7 +19,7 @@ a uniform structure.
 
 More generally, the intersection `𝓢 X` of all entourages of `X`, which has type `set (X × X)` is an
 equivalence relation on `X`. Points which are equivalent under the relation are basically
-undistinguishable from the point of view of the uniform structure. For instance any uniformly
+indistinguishable from the point of view of the uniform structure. For instance any uniformly
 continuous function will send equivalent points to the same value.
 
 The quotient `separation_quotient X` of `X` by `𝓢 X` has a natural uniform structure which is

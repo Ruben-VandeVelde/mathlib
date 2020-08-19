@@ -115,9 +115,9 @@ begin
   rw [← nat.cast_id (G.degree v), ← nat.cast_id (G.degree w),
         ← adj_matrix_pow_three_of_not_adj ℕ hG hvw,
         ← adj_matrix_pow_three_of_not_adj ℕ hG (λ h, hvw (G.sym h))],
-    conv_lhs {rw ← transpose_adj_matrix},
-    simp only [pow_succ, pow_two, mul_eq_mul, ← transpose_mul, transpose_apply],
-    simp only [← mul_eq_mul, mul_assoc],
+  conv_lhs {rw ← transpose_adj_matrix},
+  simp only [pow_succ, pow_two, mul_eq_mul, ← transpose_mul, transpose_apply],
+  simp only [← mul_eq_mul, mul_assoc],
 end
 
 /-- If `G` is a friendship graph without a politician (a vertex adjacent to all others), then

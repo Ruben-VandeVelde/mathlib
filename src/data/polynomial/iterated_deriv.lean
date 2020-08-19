@@ -66,7 +66,7 @@ by simp only [iterated_deriv, derivative_X, function.iterate_one]
 @[simp] lemma iterated_deriv_X (h : 1 < n) : iterated_deriv (X : polynomial R) n = 0 :=
 begin
   induction n with n ih,
-  { exfalso, exact not_lt_zero 1 h},
+  { exfalso, exact not_lt_zero 1 h },
   { simp only [iterated_deriv_succ],
     by_cases H : n = 1,
     { rw H, simp only [iterated_deriv_X_one, derivative_one] },
@@ -76,7 +76,7 @@ end
 
 
 @[simp] lemma iterated_deriv_C_zero : iterated_deriv (C r) 0 = C r :=
-  by simp only [iterated_deriv_zero_right]
+by simp only [iterated_deriv_zero_right]
 
 @[simp] lemma iterated_deriv_C (h : 0 < n) : iterated_deriv (C r) n = 0 :=
 begin

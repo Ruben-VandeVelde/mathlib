@@ -489,7 +489,7 @@ theorem totally_bounded_iff {s : set α} :
                ⟨t, ft, h⟩ := H ε ε0 in
   ⟨t, ft, subset.trans h $ Union_subset_Union $ λ y, Union_subset_Union $ λ yt z, hε⟩⟩
 
-/-- A metric space space is totally bounded if one can reconstruct up to any ε>0 any element of the
+/-- A metric space is totally bounded if one can reconstruct up to any ε>0 any element of the
 space from finitely many data. -/
 lemma totally_bounded_of_finite_discretization {s : set α}
   (H : ∀ε > (0 : ℝ), ∃ (β : Type u) [fintype β] (F : s → β),
@@ -1380,7 +1380,7 @@ begin
   exact emetric.second_countable_of_separable α
 end
 
-/-- A metric space space is second countable if one can reconstruct up to any `ε>0` any element of
+/-- A metric space is second countable if one can reconstruct up to any `ε>0` any element of
 the space from countably many data. -/
 lemma second_countable_of_countable_discretization {α : Type u} [metric_space α]
   (H : ∀ε > (0 : ℝ), ∃ (β : Type*) [encodable β] (F : α → β), ∀x y, F x = F y → dist x y ≤ ε) :

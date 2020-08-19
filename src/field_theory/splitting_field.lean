@@ -331,7 +331,7 @@ begin
   exact splits_of_splits_id _ h
 end
 
-/-- A monic polynomial `p` that has as much roots as its degree
+/-- A monic polynomial `p` that has as many roots as its degree
 can be written `p = ∏(X - a)`, for `a` in `p.roots`. -/
 lemma prod_multiset_X_sub_C_of_monic_of_roots_card_eq {p : polynomial α}
   (hmonic : p.monic) (hroots : p.roots.card = p.nat_degree) :
@@ -364,7 +364,7 @@ begin
   exact eq_of_monic_of_associated hprodmonic hmonic hassoc
 end
 
-/-- A polynomial `p` that has as much roots as its degree
+/-- A polynomial `p` that has as many roots as its degree
 can be written `p = p.leading_coeff * ∏(X - a)`, for `a` in `p.roots`. -/
 lemma C_leading_coeff_mul_prod_multiset_X_sub_C {p : polynomial α}
   (hroots : p.roots.card = p.nat_degree) :
@@ -385,7 +385,7 @@ begin
     ... = p : by simp only [mul_one, ring_hom.map_one], },
 end
 
-/-- A polynomial splits if and only if it has as much roots as its degree. -/
+/-- A polynomial splits if and only if it has as many roots as its degree. -/
 lemma splits_iff_card_roots {p : polynomial α} :
   splits (ring_hom.id α) p ↔ p.roots.card = p.nat_degree :=
 begin

@@ -666,7 +666,7 @@ calc
   f (a • x + b • y) ≤ a • f x + b • f y : hf.2 hx hy ha hb hab
   ... ≤ a • max (f x) (f y) + b • max (f x) (f y) :
     add_le_add (smul_le_smul_of_nonneg (le_max_left _ _) ha) (smul_le_smul_of_nonneg (le_max_right _ _) hb)
-  ... ≤ max (f x) (f y) : by rw [←add_smul, hab, one_smul]
+  ... = max (f x) (f y) : by rw [←add_smul, hab, one_smul]
 
 /-- A concave function on a segment is lower-bounded by the min of its endpoints. -/
 lemma concave_on.le_on_segment' {γ : Type*}

@@ -56,8 +56,8 @@ instance : inhabited (dual 𝕜 E) := ⟨0⟩
 def inclusion_in_double_dual' (x : E) : (dual 𝕜 (dual 𝕜 E)) :=
 linear_map.mk_continuous
   { to_fun := λ f, f x,
-    map_add'    := by simp,
-    map_smul'   := by simp }
+    map_add' := by simp only [forall_const, eq_self_iff_true, continuous_linear_map.add_apply],
+    map_smul' := by simp only [continuous_linear_map.smul_apply, forall_const, eq_self_iff_true]}
   ∥x∥
   (λ f, by { rw mul_comm, exact f.le_op_norm x } )
 
@@ -67,7 +67,7 @@ linear_map.mk_continuous
 lemma double_dual_bound (x : E) : ∥(inclusion_in_double_dual' 𝕜 E) x∥ ≤ ∥x∥ :=
 begin
   apply continuous_linear_map.op_norm_le_bound,
-  { simp },
+  { exact norm_nonneg _ },
   { intros f, rw mul_comm, exact f.le_op_norm x, }
 end
 
@@ -76,8 +76,8 @@ end
 def inclusion_in_double_dual : E →L[𝕜] (dual 𝕜 (dual 𝕜 E)) :=
 linear_map.mk_continuous
   { to_fun := λ (x : E), (inclusion_in_double_dual' 𝕜 E) x,
-    map_add'    := λ x y, by { ext, simp },
-    map_smul'   := λ (c : 𝕜) x, by { ext, simp } }
+    map_add' := λ x y, by { ext, simp only [continuous_linear_map.map_add, dual_def, continuous_linear_map.add_apply]},
+    map_smul' := λ (c : 𝕜) x, by { ext,simp only [continuous_linear_map.smul_apply, dual_def, continuous_linear_map.map_smul]} }
   1
   (λ x, by { convert double_dual_bound _ _ _, simp } )
 
@@ -95,8 +95,8 @@ lemma norm_le_dual_bound (x : E) {M : ℝ} (hMp: 0 ≤ M) (hM : ∀ (f : dual �
 begin
   classical,
   by_cases h : x = 0,
-  { simp only [h, hMp, norm_zero] },
-  { obtain ⟨f, hf⟩ : ∃ g : E →L[𝕜] 𝕜, _ := exists_dual_vector x h,
+  { rwa [h, norm_zero] },
+  { obtain ⟨f : E →L[𝕜] 𝕜, hf⟩ := exists_dual_vector x h,
     calc ∥x∥ = ∥norm' 𝕜 x∥ : (norm_norm' _ _ _).symm
     ... = ∥f x∥ : by rw hf.2
     ... ≤ M * ∥f∥ : hM f
@@ -139,8 +139,8 @@ def to_dual' : E →+ normed_space.dual 𝕜 E :=
     map_smul' := λ _ _, inner_smul_right }
   ∥x∥
   (λ y, by { rw [is_R_or_C.norm_eq_abs], exact abs_inner_le_norm _ _ }),
-  map_zero' := by { ext z, simp },
-  map_add' := λ x y, by { ext z, simp [inner_add_left] } }
+  map_zero' := by { ext z, simp only [linear_map.coe_mk, inner_zero_left, linear_map.mk_continuous_apply, zero_apply] },
+  map_add' := λ x y, by { ext z, simp only [inner_add_left, add_apply, linear_map.coe_mk, linear_map.mk_continuous_apply] } }
 
 @[simp] lemma to_dual'_apply {x y : E} : to_dual' 𝕜 x y = ⟪x, y⟫ := rfl
 
@@ -150,13 +150,13 @@ begin
   refine le_antisymm _ _,
   { exact linear_map.mk_continuous_norm_le _ (norm_nonneg _) _ },
   { cases eq_or_lt_of_le (norm_nonneg x) with h h,
-    { have : x = 0 := norm_eq_zero.mp (eq.symm h),
-      simp [this] },
-    { refine (mul_le_mul_right h).mp _,
-      calc ∥x∥ * ∥x∥ = ∥x∥ ^ 2 : by ring
+    { rw ←h,
+      exact norm_nonneg _ },
+    { rw ←mul_le_mul_right h,
+      calc ∥x∥ * ∥x∥ = ∥x∥ ^ 2 : (pow_two _).symm
       ... = re ⟪x, x⟫ : norm_sq_eq_inner _
       ... ≤ abs ⟪x, x⟫ : re_le_abs _
-      ... = ∥to_dual' 𝕜 x x∥ : by simp [norm_eq_abs]
+      ... = ∥to_dual' 𝕜 x x∥ : by rw [norm_eq_abs, to_dual'_apply]
       ... ≤ ∥to_dual' 𝕜 x∥ * ∥x∥ : le_op_norm (to_dual' 𝕜 x) x } }
 end
 
@@ -174,44 +174,35 @@ begin
   intros ℓ,
   set Y := ker ℓ with hY,
   by_cases htriv : Y = ⊤,
-  { have hℓ : ℓ = 0,
-    { have h' := linear_map.ker_eq_top.mp htriv,
-      rw [←coe_zero] at h',
-      apply coe_injective,
-      exact h' },
-    exact ⟨0, by simp [hℓ]⟩ },
+  { use 0,
+    apply coe_injective,
+    rw [add_monoid_hom.map_zero, coe_zero, linear_map.ker_eq_top.mp htriv] },
   { have Ycomplete := is_complete_ker ℓ,
-    rw [submodule.eq_top_iff_orthogonal_eq_bot Ycomplete, ←hY] at htriv,
-    change Y.orthogonal ≠ ⊥ at htriv,
-    rw [submodule.ne_bot_iff] at htriv,
+    rw [submodule.eq_top_iff_orthogonal_eq_bot Ycomplete, ←hY, ←ne.def, submodule.ne_bot_iff] at htriv,
     obtain ⟨z : E, hz : z ∈ Y.orthogonal, z_ne_0 : z ≠ 0⟩ := htriv,
-    refine ⟨((ℓ z)† / ⟪z, z⟫) • z, _⟩,
+    use ((ℓ z)† / ⟪z, z⟫) • z,
     ext x,
-    have h₁ : (ℓ z) • x - (ℓ x) • z ∈ Y,
-    { rw [mem_ker, map_sub, map_smul, map_smul, algebra.id.smul_eq_mul, algebra.id.smul_eq_mul,
-          mul_comm],
-      exact sub_self (ℓ x * ℓ z) },
+    have h₁ : ⟪z, (ℓ z) • x - (ℓ x) • z⟫ = 0,
+    { rw Y.mem_orthogonal' z at hz,
+      apply hz,
+      rw [mem_ker, map_sub, map_smul, map_smul, algebra.id.smul_eq_mul, algebra.id.smul_eq_mul,
+          mul_comm, sub_self] },
     have h₂ : (ℓ z) * ⟪z, x⟫ = (ℓ x) * ⟪z, z⟫,
-    { have h₃ := calc
-        0    = ⟪z, (ℓ z) • x - (ℓ x) • z⟫       : by { rw [(Y.mem_orthogonal' z).mp hz], exact h₁ }
-         ... = ⟪z, (ℓ z) • x⟫ - ⟪z, (ℓ x) • z⟫  : by rw [inner_sub_right]
-         ... = (ℓ z) * ⟪z, x⟫ - (ℓ x) * ⟪z, z⟫  : by simp [inner_smul_right],
-      exact sub_eq_zero.mp (eq.symm h₃) },
-    have h₄ := calc
+    { rw ←sub_eq_zero,
+      symmetry,
+      calc
+        0    = ⟪z, (ℓ z) • x - (ℓ x) • z⟫       : h₁.symm
+         ... = ⟪z, (ℓ z) • x⟫ - ⟪z, (ℓ x) • z⟫  : inner_sub_right
+         ... = (ℓ z) * ⟪z, x⟫ - (ℓ x) * ⟪z, z⟫  : by simp only [inner_smul_right] },
+    calc
       ⟪((ℓ z)† / ⟪z, z⟫) • z, x⟫ = (ℓ z) / ⟪z, z⟫ * ⟪z, x⟫
-            : by simp [inner_smul_left, conj_div, conj_conj]
+            : by simp only [inner_smul_left, conj_div, conj_conj, inner_self_conj]
                             ... = (ℓ z) * ⟪z, x⟫ / ⟪z, z⟫
             : by rw [←div_mul_eq_mul_div]
                             ... = (ℓ x) * ⟪z, z⟫ / ⟪z, z⟫
             : by rw [h₂]
                             ... = ℓ x
-            : begin
-                have : ⟪z, z⟫ ≠ 0,
-                { change z = 0 → false at z_ne_0,
-                  rwa ←inner_self_eq_zero at z_ne_0 },
-                field_simp [this]
-              end,
-    exact h₄ }
+            : by field_simp [inner_self_ne_zero.mpr z_ne_0] }
 end
 
 end is_R_or_C
@@ -227,8 +218,8 @@ consider using `to_dual` instead. -/
 def to_dual_map : F →L[ℝ] (normed_space.dual ℝ F) :=
 linear_map.mk_continuous
   { to_fun := to_dual' ℝ,
-    map_add' := λ x y, by { ext, simp [inner_add_left] },
-    map_smul' := λ c x, by { ext, simp [inner_smul_left] } }
+    map_add' := λ x y, by { ext, simp only [inner_add_left, add_apply, to_dual'_apply]},
+    map_smul' := λ c x, by { ext, simp only [inner_smul_left, conj_to_real, algebra.id.smul_eq_mul, smul_apply, to_dual'_apply]} }
   1
   (λ x, by simp only [norm_to_dual'_apply, one_mul, linear_map.coe_mk])
 
@@ -282,10 +273,9 @@ lemma to_dual_eq_iff_eq' {x x' : F} : (∀ y : F, ⟪x, y⟫_ℝ = ⟪x', y⟫_�
 begin
   split,
   { intros h,
-    have : to_dual x = to_dual x' → x = x' := to_dual_eq_iff_eq.mp,
-    apply this,
-    simp_rw [←to_dual_apply] at h,
+    rw ←to_dual_eq_iff_eq,
     ext z,
+    simp_rw [to_dual_apply],
     exact h z },
   { rintros rfl y,
     refl }
@@ -296,11 +286,9 @@ end
 /-- In a Hilbert space, the norm of a vector in the dual space is the norm of its corresponding
 primal vector. -/
 lemma norm_to_dual_symm_apply (ℓ : normed_space.dual ℝ F) : ∥to_dual.symm ℓ∥ = ∥ℓ∥ :=
-begin
-  have : ℓ = to_dual (to_dual.symm ℓ) := by simp only [continuous_linear_equiv.apply_symm_apply],
-  conv_rhs { rw [this] },
-  refine eq.symm (norm_to_dual_apply _),
-end
+calc ∥to_dual.symm ℓ∥
+    = ∥to_dual (to_dual.symm ℓ)∥ : (norm_to_dual_apply _).symm
+... = ∥ℓ∥ : by rw continuous_linear_equiv.apply_symm_apply
 
 end real
 

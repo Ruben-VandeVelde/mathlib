@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Mario Carneiro, Floris van Doorn, Yury Kudryashov
 -/
 import topology.instances.nnreal
+import data.nat.log
 
 /-!
 # Square root of a real number
@@ -93,21 +94,6 @@ theorem sqrt_aux_nonneg (f : cau_seq ℚ abs) : ∀ i : ℕ, 0 ≤ sqrt_aux f i
   apply div_nonneg; exact int.cast_nonneg.2 (int.of_nat_nonneg _)
 | (n + 1) := le_max_left _ _
 
-/- TODO(Mario): finish the proof
-theorem sqrt_aux_converges (f : cau_seq ℚ abs) : ∃ h x, 0 ≤ x ∧ x * x = max 0 (mk f) ∧
-  mk ⟨sqrt_aux f, h⟩ = x :=
-begin
-  rcases sqrt_exists (le_max_left 0 (mk f)) with ⟨x, x0, hx⟩,
-  suffices : ∃ h, mk ⟨sqrt_aux f, h⟩ = x,
-  { exact this.imp (λ h e, ⟨x, x0, hx, e⟩) },
-  apply of_near,
-
-  suffices : ∃ δ > 0, ∀ i, abs (↑(sqrt_aux f i) - x) < δ / 2 ^ i,
-  { rcases this with ⟨δ, δ0, hδ⟩,
-    intros,
-     }
-end -/
-
 /-- The square root of a real number. This returns 0 for negative inputs. -/
 @[pp_nodot] noncomputable def sqrt (x : ℝ) : ℝ :=
 nnreal.sqrt (nnreal.of_real x)
@@ -136,6 +122,118 @@ by simp [sqrt, ← nnreal.coe_mul, nnreal.coe_of_real _ h]
 
 @[simp] theorem sqrt_mul_self (h : 0 ≤ x) : sqrt (x * x) = x :=
 (mul_self_inj_of_nonneg (sqrt_nonneg _) h).1 (mul_self_sqrt (mul_self_nonneg _))
+
+
+example (a b : ℝ) (h : a ≤ b) (ha : 0 < a) (hb : 0 < b) : 1/b ≤ 1/a := by {
+  rw le_div_iff ha,
+  rw mul_comm,
+  rw ←mul_div_assoc,
+  rw div_le_iff hb,
+  rw [one_mul, mul_one],
+  exact h,
+}
+theorem sqrt_exists : ∀ {x : ℝ}, 0 ≤ x → ∃ y, 0 ≤ y ∧ y * y = x := by {
+  intros x hx,
+  let y := sqrt x,
+  use sqrt x,
+  split,
+  apply sqrt_nonneg,
+  apply mul_self_sqrt hx, }
+theorem xxx (a : ℝ) (i j : ℕ) (h : i ≤ j) (h' : 0 ≤ a) : a / 2 ^ j ≤ a / 2 ^ i := by {
+  rw le_div_iff,
+  rw mul_comm,
+  rw ←mul_div_assoc,
+  rw div_le_iff,
+  rw mul_comm,
+  exact mul_le_mul_of_nonneg_left (pow_le_pow one_le_two h) h',-- ,
+  norm_num,
+  norm_num,
+}
+example (a b : ℝ) (h : b ≠ 0) : a / b * b = a := by {
+  exact (eq_div_iff h).mp rfl,
+}
+lemma zzz (ε δ : ℝ) (hε : 0 < ε) (hδ : 0 < δ) : ∃ i : ℕ, δ < 2 ^ i * ε :=
+begin
+
+      suffices : ∃ a, δ < a * ε,
+      { obtain ⟨a, ha⟩ := this,
+        obtain ⟨b, hb: a < ↑b⟩ := exists_nat_gt a,
+        let c := nat.log 2 b,
+        have : (b : ℝ) < (2 : ℝ) ^ (nat.log 2 b + 1),
+        {
+          norm_cast,
+          exact nat.pow_succ_log_gt_self 2 b one_lt_two sorry,
+        },
+--        have := (mul_lt_mul_right H).mpr this,
+        use nat.log 2 b + 1,
+        calc δ
+            < a * ε : ha
+        ... < b * ε : (mul_lt_mul_right hε).mpr hb
+        ... < _ : _,
+        sorry,
+        rw mul_lt_mul_right hε,
+        sorry},
+      use δ / ε + 1,
+      rwa [add_mul, one_mul, (eq_div_iff hε.ne.symm).mp rfl, lt_add_iff_pos_right]
+end
+
+theorem sqrt_aux_converges (f : cau_seq ℚ abs) : ∃ h x, 0 ≤ x ∧ x * x = max 0 (mk f) ∧
+  mk ⟨sqrt_aux f, h⟩ = x :=
+begin
+  let x := sqrt (max 0 (mk f)),
+  --have x0 := le_max_left 0 (mk f),
+  have x0 : 0 ≤ x := sqrt_nonneg _,
+  have hx : x * x = _ := mul_self_sqrt (le_max_left 0 (mk f)),
+--  rcases sqrt_exists (le_max_left 0 (mk f)) with ⟨x, x0, hx⟩,
+  suffices : ∃ h, mk ⟨sqrt_aux f, h⟩ = x,
+  { exact this.imp (λ h e, ⟨x, x0, hx, e⟩) },
+  apply of_near,
+
+  suffices : ∃ δ > 0, ∀ i, abs (↑(sqrt_aux f i) - x) < δ / 2 ^ i,
+  { rcases this with ⟨δ, δ0, hδ⟩,
+    intros,
+    obtain ⟨i : ℕ, hi⟩ : ∃ i, δ < 2 ^ i * ε,
+    { apply zzz _ _ H δ0 },
+    use i,
+    intros j hj,
+    have : δ / 2 ^ j < ε,
+    {
+      calc δ / 2 ^ j
+          ≤ δ / 2 ^ i : xxx _ _ _ hj δ0.lt.le
+      ... < ε : by { rwa [div_lt_iff, mul_comm], norm_num },
+    },
+    refine lt_of_lt_of_le _ this.le,
+    have := hδ j,
+    apply lt_of_lt_of_le,
+    { exact this, },
+    refl,
+    /-
+    calc _
+        < δ / 2 ^ j : _
+    ... ≤ δ / 2 ^ i : _
+    ... < ε : _,
+
+
+    have yyy := xxx _ _ _ hj δ0.lt.le,
+    calc _
+        < δ / 2 ^ j : hδ _
+    ... ≤ δ / 2 ^ i : yyy
+    ... < ε : by { rwa [div_lt_iff, mul_comm], sorry, norm_num },
+    -/
+  },
+
+  use [1, by norm_num],
+  intro i,
+  induction i,
+  { simp [sqrt_aux, x],
+  },
+  sorry,
+/-
+def sqrt_aux (f : cau_seq ℚ abs) : ℕ → ℚ
+| 0       := rat.mk_nat (f 0).num.to_nat.sqrt (f 0).denom.sqrt
+| (n + 1) := let s := sqrt_aux n in max 0 $ (s + f (n+1) / s) / 2
+-/
+end
 
 theorem sqrt_eq_iff_mul_self_eq (hx : 0 ≤ x) (hy : 0 ≤ y) :
   sqrt x = y ↔ y * y = x :=

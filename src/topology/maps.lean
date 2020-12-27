@@ -42,7 +42,7 @@ open map, closed map, embedding, quotient map, identification map
 -/
 
 open set filter
-open_locale topological_space
+open_locale topological_space filter
 
 variables {α : Type*} {β : Type*} {γ : Type*} {δ : Type*}
 
@@ -161,6 +161,10 @@ def quotient_map {α : Type*} {β : Type*} [tα : topological_space α] [tβ : t
   (f : α → β) : Prop :=
 function.surjective f ∧ tβ = tα.coinduced f
 
+lemma quotient_map_iff {α β : Type*} [topological_space α] [topological_space β] {f : α → β} :
+  quotient_map f ↔ function.surjective f ∧ ∀ s : set β, is_open s ↔ is_open (f ⁻¹' s) :=
+and_congr iff.rfl topological_space_eq_iff
+
 namespace quotient_map
 variables [topological_space α] [topological_space β] [topological_space γ] [topological_space δ]
 
@@ -169,7 +173,7 @@ protected lemma id : quotient_map (@id α) :=
 
 protected lemma comp {g : β → γ} {f : α → β} (hg : quotient_map g) (hf : quotient_map f) :
   quotient_map (g ∘ f) :=
-⟨function.surjective_comp hg.left hf.left, by rw [hg.right, hf.right, coinduced_compose]⟩
+⟨hg.left.comp hf.left, by rw [hg.right, hf.right, coinduced_compose]⟩
 
 protected lemma of_quotient_map_compose {f : α → β} {g : β → γ}
   (hf : continuous f) (hg : continuous g)
@@ -218,9 +222,12 @@ le_map $ λ s, hf.image_mem_nhds
 lemma of_inverse {f : α → β} {f' : β → α}
   (h : continuous f') (l_inv : left_inverse f f') (r_inv : right_inverse f f') :
   is_open_map f :=
-assume s hs,
-have f' ⁻¹' s = f '' s, by ext x; simp [mem_image_iff_of_inverse r_inv l_inv],
-this ▸ h s hs
+begin
+  assume s hs,
+  have : f' ⁻¹' s = f '' s, by ext x; simp [mem_image_iff_of_inverse r_inv l_inv],
+  rw ← this,
+  exact hs.preimage h
+end
 
 lemma to_quotient_map {f : α → β}
   (open_map : is_open_map f) (cont : continuous f) (surj : function.surjective f) :
@@ -230,9 +237,9 @@ lemma to_quotient_map {f : α → β}
     ext s,
     show is_open s ↔ is_open (f ⁻¹' s),
     split,
-    { exact cont s },
+    { exact continuous_def.1 cont s },
     { assume h,
-      rw ← @image_preimage_eq _ _ _ s surj,
+      rw ← surj.image_preimage s,
       exact open_map _ h }
   end⟩
 
@@ -271,6 +278,14 @@ assume s hs,
 have f' ⁻¹' s = f '' s, by ext x; simp [mem_image_iff_of_inverse r_inv l_inv],
 this ▸ continuous_iff_is_closed.mp h s hs
 
+lemma of_nonempty {f : α → β} (h : ∀ s, is_closed s → s.nonempty → is_closed (f '' s)) :
+  is_closed_map f :=
+begin
+  intros s hs, cases eq_empty_or_nonempty s with h2s h2s,
+  { simp_rw [h2s, image_empty, is_closed_empty] },
+  { exact h s hs h2s }
+end
+
 end is_closed_map
 
 section open_embedding
@@ -284,7 +299,7 @@ lemma open_embedding.open_iff_image_open {f : α → β} (hf : open_embedding f)
   {s : set α} : is_open s ↔ is_open (f '' s) :=
 ⟨embedding_open hf.to_embedding hf.open_range,
  λ h, begin
-   convert ←hf.to_embedding.continuous _ h,
+   convert ← h.preimage hf.to_embedding.continuous,
    apply preimage_image_eq _ hf.inj
  end⟩
 
@@ -369,7 +384,7 @@ begin
   intro s',
   change is_open _ ≤ is_open _,
   rw [←is_closed_compl_iff, ←is_closed_compl_iff],
-  generalize : -s' = s,
+  generalize : s'ᶜ = s,
   rw is_closed_induced_iff,
   refine λ hs, ⟨f '' s, h₃ s hs, _⟩,
   rw preimage_image_eq _ h₂

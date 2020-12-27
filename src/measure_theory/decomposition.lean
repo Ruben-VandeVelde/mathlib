@@ -6,7 +6,7 @@ Authors: Johannes Hölzl
 Hahn decomposition theorem
 
 TODO:
-* introduce finite measures (into nnreal)
+* introduce finite measures (into ℝ≥0)
 * show general for signed measures (into ℝ)
 -/
 import measure_theory.measure_space
@@ -26,7 +26,7 @@ by linarith
 lemma hahn_decomposition (hμ : μ univ < ⊤) (hν : ν univ < ⊤) :
   ∃s, is_measurable s ∧
     (∀t, is_measurable t → t ⊆ s → ν t ≤ μ t) ∧
-    (∀t, is_measurable t → t ⊆ - s → μ t ≤ ν t) :=
+    (∀t, is_measurable t → t ⊆ sᶜ → μ t ≤ ν t) :=
 begin
   let d : set α → ℝ := λs, ((μ s).to_nnreal : ℝ) - (ν s).to_nnreal,
   let c : set ℝ := d '' {s | is_measurable s },
@@ -160,13 +160,12 @@ begin
       { assume n, exact is_measurable.Inter (assume m, hf _ _) },
       { exact assume n m hnm, subset_Inter
           (assume i, subset.trans (Inter_subset (f n) i) $ f_subset_f hnm $ le_refl _) } },
-    refine le_of_tendsto_of_tendsto (@at_top_ne_bot ℕ _ _) hγ hd (univ_mem_sets' $ assume m, _),
-    change γ - 2 * (1 / 2) ^ m ≤ d (⋂ (n : ℕ), f m n),
+    refine le_of_tendsto_of_tendsto' hγ hd (assume m, _),
     have : tendsto (λn, d (f m n)) at_top (𝓝 (d (⋂ n, f m n))),
     { refine d_Inter _ _ _,
       { assume n, exact hf _ _ },
       { assume n m hnm, exact f_subset_f (le_refl _) hnm } },
-    refine ge_of_tendsto (@at_top_ne_bot ℕ _ _) this (mem_at_top_sets.2 ⟨m, assume n hmn, _⟩),
+    refine ge_of_tendsto this (eventually_at_top.2 ⟨m, assume n hmn, _⟩),
     change γ - 2 * (1 / 2) ^ m ≤ d (f m n),
     refine le_trans _ (le_d_f _ _ hmn),
     exact le_add_of_le_of_nonneg (le_refl _) (pow_nonneg (le_of_lt $ half_pos $ zero_lt_one) _) },

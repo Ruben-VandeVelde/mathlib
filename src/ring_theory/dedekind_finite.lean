@@ -2,6 +2,7 @@ import linear_algebra.basic
 import data.nat.basic
 import tactic.apply
 import tactic.omega
+import tactic.subtype_instance
 import ring_theory.noetherian
 import ring_theory.adjoin
 import data.matrix.basic
@@ -32,6 +33,7 @@ end
 section
 variables (R : Type*)
 
+local attribute [instance] subset.ring
 instance subring.is_dedekind_finite_ring [ring R] [is_dedekind_finite_ring R] (S : set R) [is_subring S] : is_dedekind_finite_ring S :=
 by subtype_instance
 

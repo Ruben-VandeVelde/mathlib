@@ -22,6 +22,7 @@ their proofs or cases of ℕ and ℤ being examples of structures in abstract al
    given by the `unique_factorization_monoid` instance
 * ℤ is a `normalization_monoid`
 * ℤ is a `gcd_monoid`
+* ℕ is a `gcd_monoid`
 
 ## Tags
 
@@ -84,6 +85,21 @@ end⟩
 
 instance : unique_factorization_monoid ℕ :=
 ⟨λ _, nat.irreducible_iff_prime⟩
+
+instance nat.unique_units : unique (units ℕ) :=
+{ default := 1, uniq := nat.units_eq_one }
+
+instance : gcd_monoid ℕ :=
+{ gcd            := λ a b, nat.gcd a b,
+  lcm            := λ a b, nat.lcm a b,
+  gcd_dvd_left   := λ a b, nat.gcd_dvd_left _ _,
+  gcd_dvd_right  := λ a b, nat.gcd_dvd_right _ _,
+  dvd_gcd        := λ a b c, dvd_gcd,
+  normalize_gcd  := λ a b, normalize_eq _,
+  gcd_mul_lcm    := λ a b, (gcd_mul_lcm _ _).trans (normalize_eq _).symm,
+  lcm_zero_left  := λ a, nat.lcm_zero_left _,
+  lcm_zero_right := λ a, nat.lcm_zero_right _,
+  .. (infer_instance : normalization_monoid ℕ) }
 
 end nat
 
@@ -281,9 +297,6 @@ begin
     rw [pow_two, int.nat_abs_mul] at hpp,
     exact (or_self _).mp ((nat.prime.dvd_mul hp).mp hpp)}
 end
-
-instance nat.unique_units : unique (units ℕ) :=
-{ default := 1, uniq := nat.units_eq_one }
 
 open unique_factorization_monoid
 

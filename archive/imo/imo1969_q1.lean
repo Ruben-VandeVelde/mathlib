@@ -8,6 +8,9 @@ import data.int.nat_prime
 import tactic.linarith
 import tactic.norm_cast
 import data.set.finite
+import ring_theory.prime
+import ring_theory.int.basic
+
 /-!
 # IMO 1969 Q1
 
@@ -15,7 +18,7 @@ Prove that there are infinitely many natural numbers $a$ with the following prop
 the number $z = n^4 + a$ is not prime for any natural number $n$.
 -/
 
-open int nat
+open int
 
 /-- `good_nats` is the set of natural numbers satisfying the condition in the problem
 statement, namely the `a : ℕ` such that `n^4 + a` is not prime for any `n : ℕ`. -/
@@ -42,14 +45,23 @@ The factorization is over the integers, but we need the nonprimality over the na
 lemma int_large {m : ℤ} (h : 1 < m) : 1 < m.nat_abs :=
 by exact_mod_cast lt_of_lt_of_le h le_nat_abs
 
-lemma not_prime_of_int_mul' {m n : ℤ} {c : ℕ}
-  (hm : 1 < m) (hn : 1 < n) (hc : m*n = (c : ℤ)) : ¬ prime c :=
-not_prime_of_int_mul (int_large hm) (int_large hn) hc
-
 /-- Every natural number of the form `n^4 + 4*m^4` is not prime. -/
-lemma polynomial_not_prime {m : ℕ} (h1 : 1 < m) (n : ℕ) : ¬ prime (n^4 + 4*m^4) :=
-have h2 : 1 < (m : ℤ), from coe_nat_lt.mpr h1,
+lemma polynomial_not_prime {m : ℕ} (h1 : 1 < m) (n : ℕ) : ¬ nat.prime (n^4 + 4*m^4) :=
 begin
+  rw nat.prime_iff_prime_int,
+  rw [int.coe_nat_add],
+  simp,
+
+  rw ← factorization,
+  intro H,
+  have h2 : 1 < (m : ℤ), from coe_nat_lt.mpr h1,
+  cases of_irreducible_mul (irreducible_of_prime H) with h h;
+  rw is_unit_iff_nat_abs_eq at h,
+  have := left_factor_large (n : ℤ) h2,
+
+
+  refine not_prime _ h1 h1,
+  congr' 1,
   refine not_prime_of_int_mul' (left_factor_large (n : ℤ) h2) (right_factor_large (n : ℤ) h2) _,
   exact_mod_cast factorization
 end
